@@ -9,6 +9,7 @@ from torchvision import transforms, datasets
 from torchsummary import summary
 
 from net.AlexNet import AlexNet
+from net.LeNet import LeNet
 from net.simpleCNN import CNN
 
 def print2logfile(s,end='\n'):
@@ -50,6 +51,8 @@ def train():
         net = CNN()
     elif opt.model_name=='AlexNet':
         net = AlexNet()
+    elif opt.model_name=='LeNet':
+        net = LeNet()
     else:
         exit(-1)
     criterion = nn.CrossEntropyLoss()
@@ -125,13 +128,13 @@ def train():
     plt.figure(figsize=(20,6))
     plt.subplot(1,2,1)
     plt.plot(range(len(train_loss)), train_loss, label='train_loss')
-    plt.plot(test_id, test_loss, label='test_loss',linewidth=3)
+    plt.plot(test_id, test_loss, label='test_loss',linewidth=2)
     plt.xlabel('Iter')
     plt.ylabel('Loss')
     plt.legend(loc='upper right')
     plt.subplot(1, 2, 2)
     plt.plot(range(len(train_accs)), train_accs, label='train_acc')
-    plt.plot(test_id, test_accs, label='test_acc',linewidth=3)
+    plt.plot(test_id, test_accs, label='test_acc',linewidth=2)
     plt.xlabel('Iter')
     plt.ylabel('Accuracy')
     plt.legend(loc='lower right')
@@ -142,8 +145,8 @@ def train():
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=str, default='train', help="is train or test")
-    parser.add_argument("--nepoch", type=int, default=2, help="number of epochs of training")
-    parser.add_argument("--batch_size", type=int, default=128, help="size of the batches")
+    parser.add_argument("--nepoch", type=int, default=5, help="number of epochs of training")
+    parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
     parser.add_argument("--lr", type=float, default=0.001, help="SGD: learning rate")
     parser.add_argument("--momentum", type=float, default=0.9, help="SGD: momentum")
     parser.add_argument("--img_size", type=tuple, default=(28,28), help="size of each image dimension")
@@ -153,7 +156,7 @@ if __name__=="__main__":
     parser.add_argument("--test_interval", type=int, default=10, help="")
     parser.add_argument("--model_save_dir", type=str, default='models', help="")
     parser.add_argument("--expr", type=str, default='expr', help="")
-    parser.add_argument("--model_name", type=str, default='simpleCNN', help="")
+    parser.add_argument("--model_name", type=str, default='AlexNet', help="")
     parser.add_argument("--data_dir", type=str, default='data', help="")
     opt = parser.parse_args()
 
@@ -167,6 +170,6 @@ if __name__=="__main__":
     logfile=os.path.join(path,'log_%s.txt'%timestr)
     if os.path.exists(logfile):
         os.remove(logfile)
-
+    print2logfile(opt)
 
     train()
