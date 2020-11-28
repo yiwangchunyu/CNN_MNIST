@@ -11,6 +11,7 @@ from torchsummary import summary
 from net.AlexNet import AlexNet
 from net.LeNet import LeNet
 from net.googLeNet import GoogLeNet
+from net.myNet import MyNet
 from net.resnet import resnet18
 from net.simpleCNN import CNN
 from net.vgg import VGG
@@ -50,6 +51,14 @@ def train():
         ])
     elif opt.model_name=="ResNet":
         net=resnet18()
+        input_shape = (32, 32)
+        transform = transforms.Compose([
+            transforms.Resize(input_shape),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5], std=[0.5])
+        ])
+    elif opt.model_name=="MyNet":
+        net=MyNet()
         input_shape = (32, 32)
         transform = transforms.Compose([
             transforms.Resize(input_shape),
@@ -187,7 +196,7 @@ if __name__=="__main__":
     parser.add_argument("--test_interval", type=int, default=10, help="")
     parser.add_argument("--model_save_dir", type=str, default='models', help="")
     parser.add_argument("--expr", type=str, default='expr', help="")
-    parser.add_argument("--model_name", type=str, default='ResNet', help="")
+    parser.add_argument("--model_name", type=str, default='MyNet', help="")
     parser.add_argument("--data_dir", type=str, default='data', help="")
     opt = parser.parse_args()
 
