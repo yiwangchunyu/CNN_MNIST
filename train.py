@@ -11,6 +11,8 @@ from torchsummary import summary
 from net.AlexNet import AlexNet
 from net.LeNet import LeNet
 from net.simpleCNN import CNN
+from net.vgg import VGG
+
 
 def print2logfile(s,end='\n'):
     print(s)
@@ -21,7 +23,23 @@ def print2logfile(s,end='\n'):
 def train():
     transform = transforms.Compose([transforms.ToTensor(),
                                    transforms.Normalize(mean=[0.5],std=[0.5])])
-
+    input_shape=(28,28)
+    if opt.model_name=='simpleCNN':
+        net = CNN()
+    elif opt.model_name=='AlexNet':
+        net = AlexNet()
+    elif opt.model_name=='LeNet':
+        net = LeNet()
+    elif opt.model_name=='VGG11':
+        net = VGG('VGG11')
+        transform = transforms.Compose([
+            transforms.Resize([32, 32]),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5], std=[0.5])
+        ])
+        input_shape = (32, 32)
+    else:
+        exit(-1)
     train_data = datasets.MNIST(
         root = opt.data_dir,
         transform=transform,
@@ -47,14 +65,7 @@ def train():
         shuffle=True,
         drop_last=True
     )
-    if opt.model_name=='simpleCNN':
-        net = CNN()
-    elif opt.model_name=='AlexNet':
-        net = AlexNet()
-    elif opt.model_name=='LeNet':
-        net = LeNet()
-    else:
-        exit(-1)
+
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(net.parameters(), lr=opt.lr, momentum=opt.momentum)
     #也可以选择Adam优化方法
@@ -68,10 +79,11 @@ def train():
     test_id = []
     best_acc = 0
     print2logfile(net)
-    print2logfile(summary(net, (1, 28, 28)))
+    print2logfile(summary(net, (1, input_shape[0], input_shape[1])))
     for epoch in range(opt.nepoch):
         running_loss=0
         for i, data in enumerate(train_loader, 0):  # 0是下标起始位置默认为0
+            net.train()
             # data 的格式[[inputs, labels]]
             #         inputs,labels = data
             inputs, labels = data[0].to(device), data[1].to(device)
@@ -94,11 +106,12 @@ def train():
             train_accs.append(train_acc)
 
             if (i+1) % opt.display_interval == 0:
-                print2logfile('[%2d/%d,%5d/%d] train_loss:%.3f, train_acc:%.3f' %
+                print2logfile('[%2d/%d,%5d/%d] train_loss:%.4f, train_acc:%.4f' %
                       (epoch+1, opt.nepoch, i+1, len(train_loader), running_loss / opt.display_interval, train_acc))
                 running_loss=0
 
             if (i + 1) % opt.test_interval == 0:
+                net.eval()
                 test_correct = 0
                 test_total = 0
                 with torch.no_grad():  # 进行评测的时候网络不更新梯度
@@ -113,7 +126,7 @@ def train():
                     test_accs.append(test_acc)
                     test_loss.append(loss.item())
                     test_id.append(epoch*len(train_loader)+i)
-                    print2logfile('[%2d/%d,%5d/%d]                                  test_acc:%.3f %s' %
+                    print2logfile('[%2d/%d,%5d/%d]                                  test_acc:%.4f %s' %
                           (epoch + 1, opt.nepoch, i + 1, len(train_loader), test_acc, 'best_acc update, model saved.' if test_acc>best_acc else ''))
                     if test_acc>best_acc:
                         best_acc=test_acc
@@ -146,7 +159,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=str, default='train', help="is train or test")
     parser.add_argument("--nepoch", type=int, default=5, help="number of epochs of training")
-    parser.add_argument("--batch_size", type=int, default=64, help="size of the batches")
+    parser.add_argument("--batch_size", type=int, default=128, help="size of the batches")
     parser.add_argument("--lr", type=float, default=0.001, help="SGD: learning rate")
     parser.add_argument("--momentum", type=float, default=0.9, help="SGD: momentum")
     parser.add_argument("--img_size", type=tuple, default=(28,28), help="size of each image dimension")
@@ -156,7 +169,7 @@ if __name__=="__main__":
     parser.add_argument("--test_interval", type=int, default=10, help="")
     parser.add_argument("--model_save_dir", type=str, default='models', help="")
     parser.add_argument("--expr", type=str, default='expr', help="")
-    parser.add_argument("--model_name", type=str, default='AlexNet', help="")
+    parser.add_argument("--model_name", type=str, default='VGG11', help="")
     parser.add_argument("--data_dir", type=str, default='data', help="")
     opt = parser.parse_args()
 
