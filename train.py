@@ -10,6 +10,7 @@ from torchsummary import summary
 
 from net.AlexNet import AlexNet
 from net.LeNet import LeNet
+from net.googLeNet import GoogLeNet
 from net.simpleCNN import CNN
 from net.vgg import VGG
 
@@ -38,6 +39,14 @@ def train():
             transforms.Normalize(mean=[0.5], std=[0.5])
         ])
         input_shape = (32, 32)
+    elif opt.model_name=="GoogLeNet":
+        net=GoogLeNet()
+        input_shape = (32, 32)
+        transform = transforms.Compose([
+            transforms.Resize(input_shape),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5], std=[0.5])
+        ])
     else:
         exit(-1)
     train_data = datasets.MNIST(
@@ -159,7 +168,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=str, default='train', help="is train or test")
     parser.add_argument("--nepoch", type=int, default=5, help="number of epochs of training")
-    parser.add_argument("--batch_size", type=int, default=128, help="size of the batches")
+    parser.add_argument("--batch_size", type=int, default=16, help="size of the batches")
     parser.add_argument("--lr", type=float, default=0.001, help="SGD: learning rate")
     parser.add_argument("--momentum", type=float, default=0.9, help="SGD: momentum")
     parser.add_argument("--img_size", type=tuple, default=(28,28), help="size of each image dimension")
@@ -169,7 +178,7 @@ if __name__=="__main__":
     parser.add_argument("--test_interval", type=int, default=10, help="")
     parser.add_argument("--model_save_dir", type=str, default='models', help="")
     parser.add_argument("--expr", type=str, default='expr', help="")
-    parser.add_argument("--model_name", type=str, default='VGG11', help="")
+    parser.add_argument("--model_name", type=str, default='GoogLeNet', help="")
     parser.add_argument("--data_dir", type=str, default='data', help="")
     opt = parser.parse_args()
 
